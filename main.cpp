@@ -56,8 +56,13 @@ int main(int argc, const char ** argv) {
 #ifdef USE_MPI
     if(!rank){
 #endif
-     std::cout << "Tr(rho) - Tr(rho^2) = " << dmfunc.tr_trsq() << std::endl;
+     std::cout << "Tr(rho - rho^2) = " << dmfunc.tr_trsq() << std::endl;
      std::cout << "S_ent = " << dmfunc.S_entanglement() << std::endl;
+     std::cout << "Entanglement spectrum:" << std::endl;
+     std::vector<double> espec = dmfunc.entanglement_spectrum();
+     for(size_t ii = 0; ii < espec.size(); ++ii){
+       std::cout << espec[ii] << std::endl;
+     }
     }
     EDLib::hdf5::save_eigen_pairs(ham, ar, "results");
     //EDLib::gf::GreensFunction < HamType, alps::gf::matsubara_positive_mesh, alps::gf::statistics::statistics_type> greensFunction(params, ham,alps::gf::statistics::statistics_type::FERMIONIC);

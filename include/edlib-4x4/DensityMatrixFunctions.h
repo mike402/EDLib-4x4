@@ -1,9 +1,10 @@
-#ifndef HUBBARD_ENTANGLEMENTENTROPY_H
-#define HUBBARD_ENTANGLEMENTENTROPY_H
+#ifndef E4X4_DENSITYMATRIXFUNCTIONS_H
+#define E4X4_DENSITYMATRIXFUNCTIONS_H
 
 #include "edlib/DensityMatrix.h"
 
 #include <Eigen/Dense>
+#include <Eigen/Eigenvalues>
 #include <unsupported/Eigen/MatrixFunctions>
 
 namespace EDLib {
@@ -22,11 +23,11 @@ namespace EDLib {
     }
 
     /**
-     * Compute Tr(densitymatrix) - Tr(densitymatrix^2).
+     * Compute quadratic entanglement entropy Tr(rho - rho^2).
      */
-    double tr_trsq(){
-      double Tr = 0.0;
-      double Tr_sq = 0.0;
+    precision tr_trsq(){
+      precision Tr = 0.0;
+      precision Tr_sq = 0.0;
       for(size_t isect = 0; isect < dm.sectors().size(); ++isect){
         for(size_t ii = 0; ii < dm.sectors()[isect].size(); ++ii){
           Tr += dm.matrix().at(isect)[ii][ii];
@@ -37,13 +38,13 @@ namespace EDLib {
           }
         }
       }
-      return Tr_sq - Tr;
+      return Tr - Tr_sq;
     }
 
     /**
-     * Compute entanglement entropy.
+     * Compute Von Neumann entropy.
      */
-    double S_entanglement(){
+    precision S_entanglement(){
       std::vector<std::vector<precision>> full = dm.full();
       Eigen::Matrix<precision, Eigen::Dynamic, Eigen::Dynamic> rho(full.size(), full.size());
       rho.fill(0.0);
@@ -54,6 +55,29 @@ namespace EDLib {
       }
       Eigen::Matrix<precision, Eigen::Dynamic, Eigen::Dynamic> rho_logrho = rho * rho.log();
       return -rho_logrho.trace();
+    }
+
+    /**
+     * Compute entanglement spectrum, i.e. eigenvalues of the density matrix.
+     */
+    std::vector<precision> entanglement_spectrum(){
+      std::vector<precision> result(0);
+      for(size_t isect = 0; isect < dm.sectors().size(); ++isect){
+       Eigen::Matrix<precision, Eigen::Dynamic, Eigen::Dynamic> rho(dm.sectors()[isect].size(), dm.sectors()[isect].size());
+       for(size_t ii = 0; ii < dm.sectors()[isect].size(); ++ii){
+         for(size_t jj = ii; jj < dm.sectors()[isect].size(); ++jj){
+           rho(ii, jj) = dm.matrix().at(isect)[ii][jj];
+         }
+       }
+       // FIXME This won't compile with "expected expression". Whatever gets the job done...
+       //Eigen::Matrix<precision, Eigen::Dynamic, 1> evals = rho.selfadjointView<Eigen::Lower>().eigenvalues();
+       Eigen::Matrix<std::complex<precision>, Eigen::Dynamic, 1> evals = rho.eigenvalues();
+       for(size_t ii = 0; ii < evals.size(); ++ii){
+        result.push_back(evals(ii).real());
+       }
+      }
+      std::sort(result.begin(), result.end());
+      return result;
     }
 
   private:
