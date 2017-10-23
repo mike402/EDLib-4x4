@@ -11,7 +11,7 @@
 #include "edlib/HDF5Utils.h"
 #include "edlib/SpinResolvedStorage.h"
 #include "edlib/StaticObservables.h"
-#include "edlib/DensityMatrix.h"
+#include "edlib-ext/DensityMatrix.h"
 #include "edlib-4x4/DensityMatrixFunctions.h"
 #include "edlib/MeshFactory.h"
 
@@ -43,8 +43,8 @@ int main(int argc, const char ** argv) {
     HamType ham(params);
 #endif
     ham.diag();
-    EDLib::DensityMatrix<HamType> dm(params, ham);
-    EDLib::DensityMatrixFunctions<HamType> dmfunc(params, dm);
+    EDLib::ext::DensityMatrix<HamType> dm(params, ham);
+    EDLib::ext::DensityMatrixFunctions<HamType> dmfunc(params, dm);
     EDLib::StaticObservables<HamType> so(params);
     so.print_static_observables(ham);
     for (const auto& pair :ham.eigenpairs()) {
