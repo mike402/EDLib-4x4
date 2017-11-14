@@ -13,6 +13,7 @@
 #include "edlib/StaticObservables.h"
 #include "ext/DensityMatrix.h"
 #include "edlib-4x4/DensityMatrixFunctions.h"
+#include "edlib-4x4/PairingSusceptibility.h"
 #include "edlib/MeshFactory.h"
 
 int main(int argc, const char ** argv) {
@@ -65,6 +66,9 @@ int main(int argc, const char ** argv) {
      }
     }
     EDLib::hdf5::save_eigen_pairs(ham, ar, "results");
+    EDLib::gf::PairingSusceptibility < HamType, alps::gf::real_frequency_mesh> psusc(params, ham);
+    psusc.compute();
+    psusc.save(ar, "results");
     //EDLib::gf::GreensFunction < HamType, alps::gf::matsubara_positive_mesh, alps::gf::statistics::statistics_type> greensFunction(params, ham,alps::gf::statistics::statistics_type::FERMIONIC);
     EDLib::gf::GreensFunction < HamType, alps::gf::real_frequency_mesh> greensFunction(params, ham);
     greensFunction.compute();
