@@ -32,9 +32,7 @@ namespace EDLib {
         for(size_t ii = 0; ii < dm.sectors()[isect].size(); ++ii){
           Tr += dm.matrix().at(isect)[ii][ii];
           for(size_t jj = 0; jj < dm.sectors()[isect].size(); ++jj){
-            for(size_t kk = 0; kk < dm.sectors()[isect].size(); ++kk){
-              Tr_sq += dm.matrix().at(isect)[jj][jj] * dm.matrix().at(isect)[kk][kk];
-            }
+            Tr_sq += dm.matrix().at(isect)[ii][jj] * dm.matrix().at(isect)[jj][ii];
           }
         }
       }
