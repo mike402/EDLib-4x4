@@ -46,7 +46,10 @@ namespace EDLib {
       std::vector<precision> espec = entanglement_spectrum();
       precision sum = 0.0;
       for(size_t ii = 0; ii < espec.size(); ++ii){
-        sum -= espec[ii] * std::log(espec[ii]);
+        // XXX I'm not sure this is right!
+        if(std::abs(espec[ii]) > 1e-9){
+          sum -= espec[ii] * std::log(espec[ii]);
+        }
       }
       return sum;
     }
