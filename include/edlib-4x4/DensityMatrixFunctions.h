@@ -5,7 +5,6 @@
 
 #include <Eigen/Dense>
 #include <Eigen/Eigenvalues>
-#include <unsupported/Eigen/MatrixFunctions>
 
 namespace EDLib {
   template<class Hamiltonian>
@@ -43,16 +42,13 @@ namespace EDLib {
      * Compute Von Neumann entropy.
      */
     precision S_entanglement(){
-      std::vector<std::vector<precision>> full = dm.full();
-      Eigen::Matrix<precision, Eigen::Dynamic, Eigen::Dynamic> rho(full.size(), full.size());
-      rho.fill(0.0);
-      for(size_t ii = 0; ii < full.size(); ++ii){
-        for(size_t jj = ii; jj < full.size(); ++jj){
-          rho(ii, jj) = full[ii][jj];
-        }
+      /* Optimised: Tr(M * log(M)) = Tr(eigenvalues(M) * log(eigenvalues(M))) */
+      std::vector<precision> espec = entanglement_spectrum();
+      precision sum = 0.0;
+      for(size_t ii = 0; ii < espec.size(); ++ii){
+        sum -= espec[ii] * std::log(espec[ii]);
       }
-      Eigen::Matrix<precision, Eigen::Dynamic, Eigen::Dynamic> rho_logrho = rho * rho.log();
-      return -rho_logrho.trace();
+      return sum;
     }
 
     /**
@@ -63,7 +59,7 @@ namespace EDLib {
       for(size_t isect = 0; isect < dm.sectors().size(); ++isect){
        Eigen::Matrix<precision, Eigen::Dynamic, Eigen::Dynamic> rho(dm.sectors()[isect].size(), dm.sectors()[isect].size());
        for(size_t ii = 0; ii < dm.sectors()[isect].size(); ++ii){
-         for(size_t jj = ii; jj < dm.sectors()[isect].size(); ++jj){
+         for(size_t jj = 0; jj < dm.sectors()[isect].size(); ++jj){
            rho(ii, jj) = dm.matrix().at(isect)[ii][jj];
          }
        }
