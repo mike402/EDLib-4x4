@@ -72,10 +72,14 @@ add_subdirectory(include/edlib-4x4)
 # Unit and acceptence tests
 if(Testing)
     include(EnableGtests)
+    #UseGtest()
+    #include_directories(${E4X4_SOURCE_DIR}/test)
+    add_subdirectory(test)
     include_directories(${GTEST_INCLUDE_DIR})
     enable_testing()
-    add_subdirectory(test)
-    include_directories(${E4X4_SOURCE_DIR}/test)
+
+    add_test(DensityMatrixTest test/DensityMatrixTest)
+
 endif(Testing)
 
 # main Time-Dependent Lanczos code
