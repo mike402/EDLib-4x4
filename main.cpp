@@ -43,7 +43,8 @@ int main(int argc, const char ** argv) {
     HamType ham(params);
 #endif
     ham.diag();
-    EDLib::DensityMatrix<HamType> dm(params, ham, std::vector<size_t> {0});
+    EDLib::DensityMatrix<HamType> dm(params, ham, std::vector<size_t> {0, 1, 4, 5});
+    EDLib::DensityMatrix<HamType> dmAB(params, ham, std::vector<size_t> {0, 1, 2, 3, 4, 5, 6, 7});
 /*
     EDLib::StaticObservables<HamType> so(params);
     so.print_static_observables(ham);
@@ -52,18 +53,34 @@ int main(int argc, const char ** argv) {
       so.print_class_contrib(ham, pair, 256, 1e-5, true);
     }
 */
-    dm.compute();
-    dm.print();
+      dm.compute();
+      dm.print();
 #ifdef USE_MPI
-    if(!rank){
+    if(!rank)
 #endif
-     std::cout << "Entanglement spectrum:" << std::endl;
-     std::vector<double> espec = dm.eigenvalues();
-     for(size_t ii = 0; ii < espec.size(); ++ii){
-       std::cout << espec[ii] << std::endl;
-     }
-     std::cout << "Tr(rho - rho^2) = " << dm.quadratic_entropy() << std::endl;
-     std::cout << "S_ent = " << dm.entanglement_entropy() << std::endl;
+    {
+      std::cout << "S_quad = " << dm.quadratic_entropy() << std::endl;
+      std::cout << "Entanglement spectrum:" << std::endl;
+      std::vector<double> espec = dm.eigenvalues();
+      for(size_t ii = 0; ii < espec.size(); ++ii){
+        std::cout << espec[ii] << std::endl;
+      }
+      std::cout << "S_ent = " << dm.entanglement_entropy() << std::endl;
+    }
+    dmAB.compute();
+#ifdef USE_MPI
+    if(!rank)
+#endif
+    {
+      std::cout << "S_quad_AB = " << dmAB.quadratic_entropy() << std::endl;
+      std::cout << "I_quad_AB = " << 2 * dm.quadratic_entropy() - dmAB.quadratic_entropy() << std::endl;
+      std::cout << "Entanglement spectrum AB:" << std::endl;
+      std::vector<double> especAB = dmAB.eigenvalues();
+      for(size_t ii = 0; ii < especAB.size(); ++ii){
+        std::cout << especAB[ii] << std::endl;
+      }
+      std::cout << "S_ent_AB = " << dmAB.entanglement_entropy() << std::endl;
+      std::cout << "I_AB  = " << dmAB.entanglement_entropy() - 2 * dm.entanglement_entropy() << std::endl;
     }
     EDLib::hdf5::save_eigen_pairs(ham, ar, "results");
 /*

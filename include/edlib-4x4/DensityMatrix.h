@@ -9,6 +9,13 @@
 #include <Eigen/Eigenvalues>
 
 namespace EDLib {
+  /**
+   * Class for evaluation of the density matrix.
+   *
+   *
+   *
+   * @tparam Hamiltonian - type of Hamiltonian object
+   */
   template<class Hamiltonian>
   class DensityMatrix {
   protected:
@@ -18,6 +25,13 @@ namespace EDLib {
 
   public:
 
+    /**
+     * Construct an object of the density matrix class
+     *
+     * @param p - AlpsCore parameter object
+     * @param h - Hamiltonain instance
+     * @param orbitals - the orbitals to calculate the density matrix for
+     */
     DensityMatrix(alps::params &p, Hamiltonian& _ham_, std::vector<size_t> orbitals) :
       _Ns(int(p["NSITES"])),
       _Ip(int(p["NSPINS"]) * int(p["NSITES"])),
@@ -63,6 +77,7 @@ namespace EDLib {
        _Ns_A = 0;
        std::cout << "Density matrix can not be calculated. " << std::endl;
       }
+      invalidate_cache();
     }
 
     /**
@@ -71,6 +86,7 @@ namespace EDLib {
      * @return sectors of the reduced density matrix
      */
     const std::map<size_t, std::vector<std::vector<precision>>> &compute() {
+      invalidate_cache();
       for(size_t isect = 0; isect < _secA.size(); ++isect){
         for(size_t jj = 0; jj < _secA[isect].size(); ++jj){
           for(size_t kk = 0; kk < _secA[isect].size(); ++kk){
@@ -153,56 +169,61 @@ namespace EDLib {
      * Compute quadratic entanglement entropy Tr(rho - rho^2).
      */
     precision quadratic_entropy(){
-      precision Tr = 0.0;
-      precision Tr_sq = 0.0;
-      for(size_t isect = 0; isect < _secA.size(); ++isect){
-        for(size_t ii = 0; ii < _secA[isect].size(); ++ii){
-          Tr += _rho[isect][ii][ii];
-          for(size_t jj = 0; jj < _secA[isect].size(); ++jj){
-            Tr_sq += _rho[isect][ii][jj] * _rho[isect][jj][ii];
+      if(!_quadratic_entropy_valid){
+        _quadratic_entropy= 0.0;
+        for(size_t isect = 0; isect < _secA.size(); ++isect){
+          for(size_t ii = 0; ii < _secA[isect].size(); ++ii){
+            _quadratic_entropy += _rho[isect][ii][ii];
+            for(size_t jj = 0; jj < _secA[isect].size(); ++jj){
+              _quadratic_entropy -= _rho[isect][ii][jj] * _rho[isect][jj][ii];
+            }
           }
         }
       }
-      return Tr - Tr_sq;
+      return _quadratic_entropy;
     }
 
     /**
-     * Compute Von Neumann entropy.
+     * Compute Von Neumann entropy -Tr(rho * log(rho)).
      */
     precision entanglement_entropy(){
-      /* Optimised: Tr(M * log(M)) = Tr(eigenvalues(M) * log(eigenvalues(M))) */
-      std::vector<precision> espec = eigenvalues();
-      precision sum = 0.0;
-      for(size_t ii = 0; ii < espec.size(); ++ii){
-        // XXX I'm not sure this is right!
-        if(std::abs(espec[ii]) > 1e-9){
-          sum -= espec[ii] * std::log(espec[ii]);
+      if(!_entanglement_entropy_valid){
+        _entanglement_entropy = 0.0;
+        eigenvalues();
+        /* Optimised: Tr(M * log(M)) = Tr(eigenvalues(M) * log(eigenvalues(M))) */
+        for(size_t ii = 0; ii < _eigenvalues.size(); ++ii){
+          // XXX I'm not sure this is right!
+          if(std::abs(_eigenvalues[ii]) > 1e-9){
+            _entanglement_entropy -= _eigenvalues[ii] * std::log(_eigenvalues[ii]);
+          }
         }
+        _entanglement_entropy_valid = true;
       }
-      return sum;
+      return _entanglement_entropy;
     }
 
     /**
      * Compute entanglement spectrum, i.e. eigenvalues of the density matrix.
      */
     std::vector<precision> eigenvalues(){
-      std::vector<precision> result(0);
-      for(size_t isect = 0; isect < _secA.size(); ++isect){
-       Eigen::Matrix<precision, Eigen::Dynamic, Eigen::Dynamic> M(_secA[isect].size(), _secA[isect].size());
-       for(size_t ii = 0; ii < _secA[isect].size(); ++ii){
-         for(size_t jj = 0; jj < _secA[isect].size(); ++jj){
-           M(ii, jj) = _rho[isect][ii][jj];
+      if(!_eigenvalues_valid){
+        _eigenvalues.clear();
+        for(size_t isect = 0; isect < _secA.size(); ++isect){
+         Eigen::Matrix<precision, Eigen::Dynamic, Eigen::Dynamic> M(_secA[isect].size(), _secA[isect].size());
+         for(size_t ii = 0; ii < _secA[isect].size(); ++ii){
+           for(size_t jj = 0; jj < _secA[isect].size(); ++jj){
+             M(ii, jj) = _rho[isect][ii][jj];
+           }
          }
-       }
-       // FIXME This won't compile with "expected expression". Whatever gets the job done...
-       //Eigen::Matrix<precision, Eigen::Dynamic, 1> evals = M.selfadjointView<Eigen::Lower>().eigenvalues();
-       Eigen::Matrix<std::complex<precision>, Eigen::Dynamic, 1> evals = M.eigenvalues();
-       for(size_t ii = 0; ii < evals.size(); ++ii){
-        result.push_back(evals(ii).real());
-       }
+         Eigen::Matrix<std::complex<precision>, Eigen::Dynamic, 1> evals = M.eigenvalues();
+         for(size_t ii = 0; ii < evals.size(); ++ii){
+          _eigenvalues.push_back(evals(ii).real());
+         }
+        }
+        std::sort(_eigenvalues.begin(), _eigenvalues.end(), [](precision a, precision b) {return a > b;});
+        _eigenvalues_valid = true;
       }
-      std::sort(result.begin(), result.end(), [](precision a, precision b) {return a > b;});
-      return result;
+      return _eigenvalues;
     }
 
   inline const std::vector<sector> &sectors()
@@ -324,10 +345,24 @@ namespace EDLib {
       return state;
     }
 
+    void invalidate_cache(){
+      _eigenvalues_valid = false;
+      _entanglement_entropy_valid = false;
+      _quadratic_entropy_valid = false;
+    }
+
     /// The hamiltonian of the system A+B
     Hamiltonian& _ham;
     /// Reduced density matrix for the system A
     std::map<size_t, std::vector<std::vector<precision>>> _rho;
+
+    /// Cached observables and their validity.
+    std::vector<precision> _eigenvalues;
+    bool _eigenvalues_valid;
+    precision _entanglement_entropy;
+    bool _entanglement_entropy_valid;
+    precision _quadratic_entropy;
+    bool _quadratic_entropy_valid;
 
     /// Symmetries of the system A.
     std::vector<symmetry> _symA;
