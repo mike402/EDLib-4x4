@@ -44,10 +44,6 @@ int main(int argc, const char ** argv) {
 #endif
     ham.diag();
 /*
-    EDLib::DensityMatrix<HamType> dm(params, ham, std::vector<size_t> {0, 1, 4, 5});
-    EDLib::DensityMatrix<HamType> dmAB(params, ham, std::vector<size_t> {0, 1, 2, 3, 4, 5, 6, 7});
-*/
-/*
     EDLib::StaticObservables<HamType> so(params);
     so.print_static_observables(ham);
     for (const auto& pair :ham.eigenpairs()) {
@@ -56,8 +52,10 @@ int main(int argc, const char ** argv) {
     }
 */
 /*
-      dm.compute();
-      dm.print();
+    EDLib::DensityMatrix<HamType> dm(params, ham, std::vector<size_t> {0, 1, 4, 5});
+    EDLib::DensityMatrix<HamType> dmAB(params, ham, std::vector<size_t> {0, 1, 2, 3, 4, 5, 6, 7});
+    dm.compute();
+    dm.print();
 #ifdef USE_MPI
     if(!rank)
 #endif
