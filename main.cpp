@@ -43,16 +43,19 @@ int main(int argc, const char ** argv) {
     HamType ham(params);
 #endif
     ham.diag();
+/*
     EDLib::DensityMatrix<HamType> dm(params, ham, std::vector<size_t> {0, 1, 4, 5});
     EDLib::DensityMatrix<HamType> dmAB(params, ham, std::vector<size_t> {0, 1, 2, 3, 4, 5, 6, 7});
+*/
 /*
     EDLib::StaticObservables<HamType> so(params);
     so.print_static_observables(ham);
     for (const auto& pair :ham.eigenpairs()) {
-      so.print_largest_coefficients(ham, pair, 256, 1e-5);
+      so.print_major_electronic_configuration(ham, pair, 256, 1e-5);
       so.print_class_contrib(ham, pair, 256, 1e-5, true);
     }
 */
+/*
       dm.compute();
       dm.print();
 #ifdef USE_MPI
@@ -83,21 +86,22 @@ int main(int argc, const char ** argv) {
       std::cout << "I_AB  = " << dmAB.entanglement_entropy() - 2 * dm.entanglement_entropy() << std::endl;
     }
     EDLib::hdf5::save_eigen_pairs(ham, ar, "results");
+*/
 /*
     EDLib::gf::PairingSusceptibility < HamType, alps::gf::real_frequency_mesh> psusc(params, ham, std::vector<std::array<size_t, 2>> {{0, 1}});
     psusc.compute();
     psusc.save(ar, "results");
+*/
     //EDLib::gf::GreensFunction < HamType, alps::gf::matsubara_positive_mesh, alps::gf::statistics::statistics_type> greensFunction(params, ham,alps::gf::statistics::statistics_type::FERMIONIC);
-    EDLib::gf::GreensFunction < HamType, alps::gf::real_frequency_mesh> greensFunction(params, ham, std::set<std::array<size_t, 2>> {{5, 5}});
+    EDLib::gf::GreensFunction < HamType, alps::gf::real_frequency_mesh> greensFunction(params, ham);
     greensFunction.compute();
     greensFunction.save(ar, "results");
     //EDLib::gf::ChiLoc<HamType, alps::gf::matsubara_positive_mesh, alps::gf::statistics::statistics_type> susc(params, ham, alps::gf::statistics::statistics_type::BOSONIC);
-    EDLib::gf::ChiLoc< HamType, alps::gf::real_frequency_mesh> susc(params, ham, std::set<std::array<size_t, 2>> {{5, 5}});
+    EDLib::gf::ChiLoc< HamType, alps::gf::real_frequency_mesh> susc(params, ham);
     susc.compute();
     susc.save(ar, "results");
     susc.compute<EDLib::gf::NOperator<double> >();
     susc.save(ar, "results");
-*/
   } catch (std::exception & e) {
 #ifdef USE_MPI
     if(!rank) std::cerr<<e.what()<<std::endl;
