@@ -81,7 +81,7 @@ int main(int argc, const char ** argv) {
         std::cout << especAB[ii] << std::endl;
       }
       std::cout << "S_ent_AB = " << dmAB.entanglement_entropy() << std::endl;
-      std::cout << "I_AB  = " << dmAB.entanglement_entropy() - 2 * dm.entanglement_entropy() << std::endl;
+      std::cout << "I_AB  = " << 2 * dm.entanglement_entropy() - dmAB.entanglement_entropy() << std::endl;
     }
     EDLib::hdf5::save_eigen_pairs(ham, ar, "results");
 */
