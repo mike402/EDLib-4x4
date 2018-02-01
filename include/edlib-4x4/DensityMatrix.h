@@ -86,6 +86,10 @@ namespace EDLib {
      * @return sectors of the reduced density matrix
      */
     const std::map<size_t, std::vector<std::vector<precision>>> &compute() {
+#ifdef USE_MPI
+      int myid;
+      MPI_Comm_rank(_ham.storage().comm(), &myid);
+#endif
       invalidate_cache();
       for(size_t isect = 0; isect < _secA.size(); ++isect){
         for(size_t jj = 0; jj < _secA[isect].size(); ++jj){
@@ -107,9 +111,17 @@ namespace EDLib {
           continue;
         }
         // Sum the contributions.
+#ifdef USE_MPI
+        if(!myid)
+#endif
+        std::cout << "Compute density matrix contribution for eigenvalue E=" << pair.eigenvalue() << " with Boltzmann factor = " << boltzmann_f << "; for sector" << pair.sector() << std::endl;
         compute_eigenvector(pair, boltzmann_f);
         sum += boltzmann_f;
       }
+#ifdef USE_MPI
+      if(!myid)
+#endif
+      std::cout << "Statsum: " << sum << std::endl;
       for(size_t isect = 0; isect < _secA.size(); ++isect){
         for(size_t jj = 0; jj < _secA[isect].size(); ++jj){
           for(size_t kk = 0; kk < _secA[isect].size(); ++kk){

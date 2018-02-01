@@ -51,7 +51,6 @@ int main(int argc, const char ** argv) {
       so.print_class_contrib(ham, pair, 256, 1e-5, true);
     }
 */
-/*
     EDLib::DensityMatrix<HamType> dm(params, ham, std::vector<size_t> {0, 1, 4, 5});
     EDLib::DensityMatrix<HamType> dmAB(params, ham, std::vector<size_t> {0, 1, 2, 3, 4, 5, 6, 7});
     dm.compute();
@@ -83,8 +82,9 @@ int main(int argc, const char ** argv) {
       std::cout << "S_ent_AB = " << dmAB.entanglement_entropy() << std::endl;
       std::cout << "I_AB  = " << 2 * dm.entanglement_entropy() - dmAB.entanglement_entropy() << std::endl;
     }
-    EDLib::hdf5::save_eigen_pairs(ham, ar, "results");
+/*
 */
+    EDLib::hdf5::save_eigen_pairs(ham, ar, "results");
 /*
     EDLib::gf::PairingSusceptibility < HamType, alps::gf::real_frequency_mesh> psusc(params, ham, std::vector<std::array<size_t, 2>> {{0, 1}});
     psusc.compute();
