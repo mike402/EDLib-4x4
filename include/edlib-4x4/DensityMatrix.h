@@ -30,18 +30,25 @@ namespace EDLib {
      *
      * @param p - AlpsCore parameter object
      * @param h - Hamiltonain instance
-     * @param orbitals - the orbitals to calculate the density matrix for
+     * @param orbitals_group - group in the input HDF5 file containing the orbitals for the density matrix
      */
-    DensityMatrix(alps::params &p, Hamiltonian& _ham_, std::vector<size_t> orbitals) :
+    DensityMatrix(alps::params &p, Hamiltonian& _ham_, std::string orbitals_group = std::string("DensityMatrix_orbitals")) :
       _Ns(int(p["NSITES"])),
       _Ip(int(p["NSPINS"]) * int(p["NSITES"])),
       _Nspins(int(p["NSPINS"])),
       _beta(p["lanc.BETA"].as<precision>()),
       _cutoff(p["lanc.BOLTZMANN_CUTOFF"]),
-      _ham(_ham_),
-      _orbsA(orbitals)
+      _ham(_ham_)
     {
-      if(p["storage.EIGENVALUES_ONLY"] == 0){
+      if(p["storage.EIGENVALUES_ONLY"] == 1) {
+        throw std::logic_error("Eigenvectors have not been computed. Density matrix can not be evaluated.");
+      }
+      std::string input = p["INPUT_FILE"];
+      alps::hdf5::archive input_file(input.c_str(), "r");
+      std::ostringstream h5path;
+      h5path << orbitals_group << "/values";
+      if(input_file.is_data(h5path.str())){
+        input_file >> alps::make_pvp(h5path.str(), _orbsA);
         std::sort(_orbsA.begin(), _orbsA.end());
         _orbsA.erase(std::unique(_orbsA.begin(), _orbsA.end()), _orbsA.end());
         _symA = std::vector<symmetry>(2, symmetry(_orbsA.size()));
@@ -74,9 +81,10 @@ namespace EDLib {
           );
         }
       }else{
-       _Ns_A = 0;
-       std::cout << "Density matrix can not be calculated. " << std::endl;
+        _Ns_A = 0;
+        std::cout << "DensityMatrix: no orbitals found under HDF5 path " << h5path.str() << ", not computing." << std::endl;
       }
+      input_file.close();
       invalidate_cache();
     }
 

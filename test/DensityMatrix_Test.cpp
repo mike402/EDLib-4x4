@@ -55,7 +55,7 @@ TEST(HubbardModelTest, ReferenceTest) {
   ham.diag();
 
   // Reduced density matrix for one site.
-  EDLib::DensityMatrix<HamType> dm(p, ham, std::vector<size_t> {0});
+  EDLib::DensityMatrix<HamType> dm(p, ham, "DensityMatrix_orbitals");
   dm.compute();
   std::vector<std::vector<double>> rho = dm.full();
   ASSERT_EQ(rho.size(), 4);
@@ -74,7 +74,7 @@ TEST(HubbardModelTest, ReferenceTest) {
   }
 
   // Full density matrix.
-  EDLib::DensityMatrix<HamType> fulldm(p, ham, std::vector<size_t> {0, 1});
+  EDLib::DensityMatrix<HamType> fulldm(p, ham, "FullDensityMatrix_orbitals");
   fulldm.compute();
   std::vector<std::vector<double>> fullrho = fulldm.full();
   ASSERT_EQ(fullrho.size(), 16);

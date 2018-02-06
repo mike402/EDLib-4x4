@@ -43,18 +43,16 @@ int main(int argc, const char ** argv) {
     HamType ham(params);
 #endif
     ham.diag();
-/*
     EDLib::StaticObservables<HamType> so(params);
     so.print_static_observables(ham);
     for (const auto& pair :ham.eigenpairs()) {
       so.print_major_electronic_configuration(ham, pair, 256, 1e-5);
       so.print_class_contrib(ham, pair, 256, 1e-5, true);
     }
-*/
-    EDLib::DensityMatrix<HamType> dm(params, ham, std::vector<size_t> {0, 1, 4, 5});
-    EDLib::DensityMatrix<HamType> dmAB(params, ham, std::vector<size_t> {0, 1, 2, 3, 4, 5, 6, 7});
+    EDLib::DensityMatrix<HamType> dm(params, ham);
+    EDLib::DensityMatrix<HamType> dmAB(params, ham, "MutualInformation_orbs");
     dm.compute();
-    dm.print();
+    //dm.print();
 #ifdef USE_MPI
     if(!rank)
 #endif
@@ -68,6 +66,7 @@ int main(int argc, const char ** argv) {
       std::cout << "S_ent = " << dm.entanglement_entropy() << std::endl;
     }
     dmAB.compute();
+    //dmAB.print();
 #ifdef USE_MPI
     if(!rank)
 #endif
