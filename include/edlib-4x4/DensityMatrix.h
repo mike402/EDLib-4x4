@@ -30,7 +30,7 @@ namespace EDLib {
      *
      * @param p - AlpsCore parameter object
      * @param h - Hamiltonain instance
-     * @param orbitals_group - group in the input HDF5 file containing the orbitals for the density matrix
+     * @param orbitals_group - group in the input HDF5 file containing the orbitals for the density matrix (default: "DensityMatrix_orbitals")
      */
     DensityMatrix(alps::params &p, Hamiltonian& _ham_, std::string orbitals_group = std::string("DensityMatrix_orbitals")) :
       _Ns(int(p["NSITES"])),

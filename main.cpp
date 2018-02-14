@@ -50,7 +50,7 @@ int main(int argc, const char ** argv) {
       so.print_class_contrib(ham, pair, 256, 1e-5, true);
     }
     EDLib::DensityMatrix<HamType> dm(params, ham);
-    EDLib::DensityMatrix<HamType> dmAB(params, ham, "MutualInformation_orbs");
+    EDLib::DensityMatrix<HamType> dmAB(params, ham, "MutualInformation_orbitals");
     dm.compute();
     //dm.print();
 #ifdef USE_MPI
