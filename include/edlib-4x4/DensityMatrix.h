@@ -82,6 +82,11 @@ namespace EDLib {
         }
       }else{
         _Ns_A = 0;
+#ifdef USE_MPI
+        int myid;
+        MPI_Comm_rank(_ham.storage().comm(), &myid);
+        if(!myid)
+#endif
         std::cout << "DensityMatrix: no orbitals found under HDF5 path " << h5path.str() << ", not computing." << std::endl;
       }
       input_file.close();
