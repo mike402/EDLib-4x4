@@ -93,6 +93,74 @@ namespace EDLib {
       invalidate_cache();
     }
 
+/* FIXME Copypasta! */
+    /**
+     * Construct an object of the density matrix class
+     *
+     * @param p - AlpsCore parameter object
+     * @param h - Hamiltonain instance
+     * @param orbitals - list of orbitals
+     */
+    DensityMatrix(alps::params &p, Hamiltonian& _ham_, std::set<size_t> orbitals) :
+      _Ns(int(p["NSITES"])),
+      _Ip(int(p["NSPINS"]) * int(p["NSITES"])),
+      _Nspins(int(p["NSPINS"])),
+      _beta(p["lanc.BETA"].as<precision>()),
+      _cutoff(p["lanc.BOLTZMANN_CUTOFF"]),
+      _ham(_ham_)
+    {
+      if(p["storage.EIGENVALUES_ONLY"] == 1) {
+        throw std::logic_error("Eigenvectors have not been computed. Density matrix can not be evaluated.");
+      }
+      if(orbitals.size()){
+        for(auto orb : orbitals){
+          _orbsA.push_back(orb);
+        }
+        std::sort(_orbsA.begin(), _orbsA.end());
+        _orbsA.erase(std::unique(_orbsA.begin(), _orbsA.end()), _orbsA.end());
+        _symA = std::vector<symmetry>(2, symmetry(_orbsA.size()));
+        _symB = std::vector<symmetry>(1, symmetry(_Ns - _orbsA.size()));
+        _Ns_A = _orbsA.size();
+        _Ns_B = _Ns - _Ns_A;
+        for(int iorb = 0; iorb < _Ns; ++iorb){
+          _orbsB.push_back(iorb);
+        }
+        for(int iorb = _orbsA.size() - 1; iorb >= 0; --iorb){
+          _orbsB.erase(_orbsB.begin() + _orbsA[iorb]);
+        }
+        for (int i = 0; i <= _Ns_A; ++i) {
+          for (int j = 0; j <= _Ns_A; ++j) {
+            _secA.push_back(sector(i, j, (size_t)(
+              _symA[0].comb().c_n_k(_Ns_A, i) *
+              _symA[0].comb().c_n_k(_Ns_A, j)
+            )));
+          }
+        }
+        for(size_t isect = 0; isect < _secA.size(); ++isect){
+          _rho.insert(
+            std::pair<size_t, std::vector<std::vector<precision>>>(
+              isect,
+              std::vector<std::vector<precision>>(
+                _secA[isect].size(),
+                std::vector<precision>(_secA[isect].size(), 0.0)
+              )
+            )
+          );
+        }
+
+      }else{
+        _Ns_A = 0;
+#ifdef USE_MPI
+        int myid;
+        MPI_Comm_rank(_ham.storage().comm(), &myid);
+        if(!myid)
+#endif
+        std::cout << "DensityMatrix: no orbitals specified, not computing." << std::endl;
+      }
+      invalidate_cache();
+    }
+/* END FIXME */
+
     /**
      * Compute reduced density matrix.
      *

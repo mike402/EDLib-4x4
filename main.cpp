@@ -49,37 +49,83 @@ int main(int argc, const char ** argv) {
       so.print_major_electronic_configuration(ham, pair, 256, 1e-5);
       so.print_class_contrib(ham, pair, 256, 1e-5, true);
     }
-    EDLib::DensityMatrix<HamType> dm(params, ham);
-    EDLib::DensityMatrix<HamType> dmAB(params, ham, "MutualInformation_orbitals");
-    dm.compute();
-    //dm.print();
-#ifdef USE_MPI
-    if(!rank)
-#endif
-    {
-      std::cout << "S_quad = " << dm.quadratic_entropy() << std::endl;
-      std::cout << "Entanglement spectrum:" << std::endl;
-      std::vector<double> espec = dm.eigenvalues();
-      for(size_t ii = 0; ii < espec.size(); ++ii){
-        std::cout << espec[ii] << std::endl;
-      }
-      std::cout << "S_ent = " << dm.entanglement_entropy() << std::endl;
+    std::vector<EDLib::DensityMatrix<HamType>> dm;
+    for(size_t ii = 0; ii < params["NSITES"]; ++ii){
+      dm.push_back(EDLib::DensityMatrix<HamType>(params, ham, std::set<size_t> {ii}));
     }
-    dmAB.compute();
-    //dmAB.print();
+    std::vector<std::vector<EDLib::DensityMatrix<HamType>>> dmAB;
+    for(size_t ii = 0; ii < params["NSITES"]; ++ii){
+      std::vector<EDLib::DensityMatrix<HamType>> tmp;
+      for(size_t jj = 0; jj < params["NSITES"]; ++jj){
+        tmp.push_back(EDLib::DensityMatrix<HamType>(params, ham, std::set<size_t> {ii, jj}));
+      }
+      dmAB.push_back(tmp);
+    }
+    for(size_t ii = 0; ii < dm.size(); ++ii){
+      dm[ii].compute();
+    }
 #ifdef USE_MPI
     if(!rank)
 #endif
     {
-      std::cout << "S_quad_AB = " << dmAB.quadratic_entropy() << std::endl;
-      std::cout << "I_quad_AB = " << 2 * dm.quadratic_entropy() - dmAB.quadratic_entropy() << std::endl;
-      std::cout << "Entanglement spectrum AB:" << std::endl;
-      std::vector<double> especAB = dmAB.eigenvalues();
-      for(size_t ii = 0; ii < especAB.size(); ++ii){
-        std::cout << especAB[ii] << std::endl;
+      std::cout << "S_quad:" << std:: endl;
+      for(size_t ii = 0; ii < dm.size(); ++ii){
+        std::cout << dm[ii].quadratic_entropy() << std::endl;
       }
-      std::cout << "S_ent_AB = " << dmAB.entanglement_entropy() << std::endl;
-      std::cout << "I_AB  = " << 2 * dm.entanglement_entropy() - dmAB.entanglement_entropy() << std::endl;
+      std::cout << "S_ent:" << std::endl;
+      for(size_t ii = 0; ii < dm.size(); ++ii){
+        std::cout << dm[ii].entanglement_entropy() << std::endl;
+      }
+    }
+    for(size_t ii = 0; ii < dmAB.size(); ++ii){
+      for(size_t jj = 0; jj < dmAB[0].size(); ++jj){
+        dmAB[ii][jj].compute();
+      }
+    }
+#ifdef USE_MPI
+    if(!rank)
+#endif
+    {
+      std::cout << "S_quad_AB:" << std::endl;
+      for(size_t ii = 0; ii < dmAB.size(); ++ii){
+        for(size_t jj = 0; jj < dmAB[0].size(); ++jj){
+          if(jj){
+            std::cout << "\t";
+          }
+          std::cout << dmAB[ii][jj].quadratic_entropy();
+        }
+        std::cout << std::endl;
+      }
+      std::cout << "I_quad_AB:" << std::endl;
+      for(size_t ii = 0; ii < dmAB.size(); ++ii){
+        for(size_t jj = 0; jj < dmAB[0].size(); ++jj){
+          if(jj){
+            std::cout << "\t";
+          }
+          std::cout << dm[ii].quadratic_entropy() + dm[jj].quadratic_entropy() - dmAB[ii][jj].quadratic_entropy();
+        }
+        std::cout << std::endl;
+      }
+      std::cout << "S_ent_AB:" << std::endl;
+      for(size_t ii = 0; ii < dmAB.size(); ++ii){
+        for(size_t jj = 0; jj < dmAB[0].size(); ++jj){
+          if(jj){
+            std::cout << "\t";
+          }
+          std::cout << dmAB[ii][jj].entanglement_entropy();
+        }
+        std::cout << std::endl;
+      }
+      std::cout << "I_ent_AB:" << std::endl;
+      for(size_t ii = 0; ii < dmAB.size(); ++ii){
+        for(size_t jj = 0; jj < dmAB[0].size(); ++jj){
+          if(jj){
+            std::cout << "\t";
+          }
+          std::cout << dm[ii].entanglement_entropy() + dm[jj].entanglement_entropy() - dmAB[ii][jj].entanglement_entropy();
+        }
+        std::cout << std::endl;
+      }
     }
 /*
 */
