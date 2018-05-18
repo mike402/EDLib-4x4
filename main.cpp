@@ -136,15 +136,41 @@ int main(int argc, const char ** argv) {
     psusc.save(ar, "results");
 */
     //EDLib::gf::GreensFunction < HamType, alps::gf::matsubara_positive_mesh, alps::gf::statistics::statistics_type> greensFunction(params, ham,alps::gf::statistics::statistics_type::FERMIONIC);
+/*
     EDLib::gf::GreensFunction < HamType, alps::gf::real_frequency_mesh> greensFunction(params, ham);
     greensFunction.compute();
     greensFunction.save(ar, "results");
+#ifdef USE_MPI
+    if(!rank){
+#endif
+      std::ostringstream Gomega_g_name, Gomega_l_name;
+      Gomega_g_name << "G_g_omega_r";
+      std::ofstream G_omega_g_file(Gomega_g_name.str().c_str());
+      G_omega_g_file << std::setprecision(14) << greensFunction.G_g();
+      G_omega_g_file.close();
+      Gomega_l_name << "G_l_omega_r";
+      std::ofstream G_omega_l_file(Gomega_l_name.str().c_str());
+      G_omega_l_file << std::setprecision(14) << greensFunction.G_l();
+      G_omega_l_file.close();
+      std::ostringstream Gomega_g_name2, Gomega_l_name2;
+      Gomega_g_name2 << "G_g_ij_omega_r";
+      std::ofstream G_omega_g_file2(Gomega_g_name2.str().c_str());
+      G_omega_g_file2<< std::setprecision(14) << greensFunction.G_g_ij();
+      G_omega_g_file2.close();
+      Gomega_l_name2 << "G_l_ij_omega_r";
+      std::ofstream G_omega_l_file2(Gomega_l_name2.str().c_str());
+      G_omega_l_file2<< std::setprecision(14) << greensFunction.G_l_ij();
+      G_omega_l_file2.close();
+#ifdef USE_MPI
+    }
+#endif
     //EDLib::gf::ChiLoc<HamType, alps::gf::matsubara_positive_mesh, alps::gf::statistics::statistics_type> susc(params, ham, alps::gf::statistics::statistics_type::BOSONIC);
     EDLib::gf::ChiLoc< HamType, alps::gf::real_frequency_mesh> susc(params, ham);
     susc.compute();
     susc.save(ar, "results");
     susc.compute<EDLib::gf::NOperator<double> >();
     susc.save(ar, "results");
+*/
   } catch (std::exception & e) {
 #ifdef USE_MPI
     if(!rank) std::cerr<<e.what()<<std::endl;
