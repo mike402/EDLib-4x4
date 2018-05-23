@@ -88,3 +88,63 @@ TEST(HubbardModelTest, ReferenceTest) {
   ASSERT_NEAR(fulldm.entanglement_entropy(), 0.0, 1e-9);
 
 }
+
+TEST(HubbardModelTest2, ReferenceTest) {
+  alps::params p;
+  EDLib::define_parameters(p);
+  p["NSITES"]=4;
+  p["NSPINS"]=2;
+  p["INPUT_FILE"]="test/input/plaquette/input.h5";
+  p["arpack.SECTOR"]=false;
+  p["storage.MAX_SIZE"]=65536;
+  p["storage.MAX_DIM"]=256;
+  p["arpack.NEV"]=1024;
+  p["lanc.BETA"]=10000.0;
+
+#ifdef USE_MPI
+  typedef EDLib::SRSHubbardHamiltonian HamType;
+#else
+  typedef EDLib::SOCSRHubbardHamiltonian HamType;
+#endif
+  HamType ham(p
+#ifdef USE_MPI
+  , MPI_COMM_WORLD
+#endif
+  );
+
+  ham.diag();
+
+  // Reduced density matrices for two sites.
+  std::vector<EDLib::DensityMatrix<HamType>> dm;
+  std::vector<std::vector<double>> dmspec;
+  for(size_t ii = 0; ii < 4; ++ii){
+    std::ostringstream name;
+    name << "DensityMatrix" << ii << "_orbitals";
+    dm.push_back(EDLib::DensityMatrix<HamType>(p, ham, name.str().c_str()));
+    dm[ii].compute();
+//dm[ii].printfull();
+    ASSERT_EQ(dm[ii].full().size(), 16);
+    ASSERT_EQ(dm[ii].full()[0].size(), 16);
+//for(size_t jj = 0; jj < dm[jj].eigenvalues().size(); ++jj){
+//  std::cout << dm[ii].eigenvalues()[jj] << std::endl;
+//}
+  }
+  // Check that density matrix for equivalent site pairs is the same.
+  ASSERT_NEAR(dm[0].quadratic_entropy(), dm[1].quadratic_entropy(), 1e-14);
+  ASSERT_NEAR(dm[0].entanglement_entropy(), dm[1].entanglement_entropy(), 1e-14);
+  ASSERT_NEAR(dm[0].entanglement_entropy(), dm[1].entanglement_entropy(), 1e-14);
+  ASSERT_NEAR(dm[2].quadratic_entropy(), dm[3].quadratic_entropy(), 1e-14);
+  ASSERT_NEAR(dm[2].entanglement_entropy(), dm[3].entanglement_entropy(), 1e-14);
+  ASSERT_NEAR(dm[2].entanglement_entropy(), dm[3].entanglement_entropy(), 1e-14);
+/*
+  for(size_t ii = 0; ii < dm[0].size(); ++ii){
+   for(size_t jj = 0; jj < dm[0][0].size(); ++jj){
+     std::vector<double> spectrum = dm[0].eigenvalues();
+     std::vector<double> spectrum = dm[0].eigenvalues();
+     std::vector<double> spectrum = dm[2].eigenvalues();
+     ASSERT_NEAR(dm[0][ii][jj], dm[1][ii][jj], 1e-5);
+     ASSERT_NEAR(dm[2][ii][jj], dm[3][ii][jj], 1e-5);
+   }
+  }
+*/
+}
