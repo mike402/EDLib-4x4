@@ -5,6 +5,8 @@
 #include "edlib/Storage.h"
 #include "edlib/EDParams.h"
 
+#include "edlib/StaticObservables.h"
+
 
 #ifdef USE_MPI
 
@@ -114,6 +116,28 @@ TEST(HubbardModelTest2, ReferenceTest) {
 
   ham.diag();
 
+/*
+EDLib::StaticObservables<HamType> so(p);
+so.print_static_observables(ham);
+for (const auto& pair :ham.eigenpairs()) {
+  so.print_major_electronic_configuration(ham, pair, 65535, 1e-5);
+}
+*/
+
+  // Check that full density matrix for one eigenvector equals
+  EDLib::DensityMatrix<HamType> fulldm(p, ham, "FullDensityMatrix_orbitals");
+  fulldm.compute();
+  auto pair = ham.eigenpairs().begin();
+  for(size_t isect = 0; isect < fulldm.sectors().size(); ++isect) {
+    if((fulldm.sectors()[isect].nup() == pair->sector().nup()) && (fulldm.sectors()[isect].ndown() == pair->sector().ndown())){
+      for(size_t ii = 0; ii < pair->eigenvector().size(); ++ii){
+        for(size_t jj = 0; jj < pair->eigenvector().size(); ++jj){
+          ASSERT_NEAR(fulldm.matrix().at(isect)[ii][jj], pair->eigenvector()[ii] * pair->eigenvector()[jj], 1e-9);
+        }
+      }
+    }
+  }
+
   // Reduced density matrices for two sites.
   std::vector<EDLib::DensityMatrix<HamType>> dm;
   std::vector<std::vector<double>> dmspec;
@@ -125,7 +149,7 @@ TEST(HubbardModelTest2, ReferenceTest) {
 //dm[ii].printfull();
     ASSERT_EQ(dm[ii].full().size(), 16);
     ASSERT_EQ(dm[ii].full()[0].size(), 16);
-//for(size_t jj = 0; jj < dm[jj].eigenvalues().size(); ++jj){
+//for(size_t jj = 0; jj < dm[ii].eigenvalues().size(); ++jj){
 //  std::cout << dm[ii].eigenvalues()[jj] << std::endl;
 //}
   }
