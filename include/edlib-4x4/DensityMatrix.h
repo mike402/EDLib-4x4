@@ -236,6 +236,33 @@ namespace EDLib {
       }
     }
 
+/* FIXME Temporary. */
+    void printfull() {
+     std::vector<std::vector<precision>> rho = full();
+#ifdef USE_MPI
+      int myid;
+      MPI_Comm_rank(_ham.comm(), &myid);
+      if(!myid)
+#endif
+      {
+        std::cout << "Density matrix for orbitals ";
+        for(size_t iorb = 0; iorb < _orbsA.size(); ++iorb){
+          std::cout << _orbsA[iorb] << " ";
+        }
+        std::cout << ":" << std::endl;
+        for(size_t ii = 0; ii < rho.size(); ++ii){
+          for(size_t jj = 0; jj < rho.size(); ++jj){
+            if(jj){
+              std::cout << "\t";
+            }
+            std::cout << rho[ii][jj];
+          }
+          std::cout << std::endl;
+        }
+      }
+    }
+/* END FIXME */
+
     /**
      * Combine the sectors of reduced density matrix.
      *

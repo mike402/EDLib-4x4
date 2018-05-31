@@ -138,6 +138,8 @@ for (const auto& pair :ham.eigenpairs()) {
     }
   }
 
+// FIXME Compute reduced density matrices naively and compare with them
+
   // Reduced density matrices for two sites.
   std::vector<EDLib::DensityMatrix<HamType>> dm;
   std::vector<std::vector<double>> dmspec;

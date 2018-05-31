@@ -63,6 +63,11 @@ int main(int argc, const char ** argv) {
     }
     for(size_t ii = 0; ii < dm.size(); ++ii){
       dm[ii].compute();
+      dm[ii].printfull();
+      std::vector<double> spectrum = dm[ii].eigenvalues();
+      for(size_t kk = 0; kk < spectrum.size(); ++kk){
+        std::cout << spectrum[kk] << std::endl;
+      }
     }
 #ifdef USE_MPI
     if(!rank)
@@ -80,6 +85,11 @@ int main(int argc, const char ** argv) {
     for(size_t ii = 0; ii < dmAB.size(); ++ii){
       for(size_t jj = 0; jj < dmAB[0].size(); ++jj){
         dmAB[ii][jj].compute();
+        dmAB[ii][jj].printfull();
+        std::vector<double> spectrum = dmAB[ii][jj].eigenvalues();
+        for(size_t kk = 0; kk < spectrum.size(); ++kk){
+          std::cout << spectrum[kk] << std::endl;
+        }
       }
     }
 #ifdef USE_MPI
