@@ -43,6 +43,7 @@ int main(int argc, const char ** argv) {
     HamType ham(params);
 #endif
     ham.diag();
+/*
     EDLib::StaticObservables<HamType> so(params);
     so.print_static_observables(ham);
     for (const auto& pair :ham.eigenpairs()) {
@@ -137,16 +138,12 @@ int main(int argc, const char ** argv) {
         std::cout << std::endl;
       }
     }
-/*
-*/
     EDLib::hdf5::save_eigen_pairs(ham, ar, "results");
-/*
     EDLib::gf::PairingSusceptibility < HamType, alps::gf::real_frequency_mesh> psusc(params, ham, std::vector<std::array<size_t, 2>> {{0, 1}});
     psusc.compute();
     psusc.save(ar, "results");
 */
     //EDLib::gf::GreensFunction < HamType, alps::gf::matsubara_positive_mesh, alps::gf::statistics::statistics_type> greensFunction(params, ham,alps::gf::statistics::statistics_type::FERMIONIC);
-/*
     EDLib::gf::GreensFunction < HamType, alps::gf::real_frequency_mesh> greensFunction(params, ham);
     greensFunction.compute();
     greensFunction.save(ar, "results");
@@ -180,6 +177,7 @@ int main(int argc, const char ** argv) {
     susc.save(ar, "results");
     susc.compute<EDLib::gf::NOperator<double> >();
     susc.save(ar, "results");
+/*
 */
   } catch (std::exception & e) {
 #ifdef USE_MPI
