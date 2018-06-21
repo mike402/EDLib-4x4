@@ -223,7 +223,11 @@ namespace EDLib {
       if(!myid)
 #endif
       for(size_t isect = 0; isect < _secA.size(); ++isect){
-        std::cout << "Density matrix sector " << _secA[isect].nup() << " " << _secA[isect].ndown() << std::endl;
+        std::cout << "Density matrix for orbitals ";
+        for(size_t iorb = 0; iorb < _orbsA.size(); ++iorb){
+          std::cout << _orbsA[iorb] << " ";
+        }
+        std::cout << "sector " << _secA[isect].nup() << " " << _secA[isect].ndown() << std::endl;
         for(size_t jj = 0; jj < _secA[isect].size(); ++jj){
           for(size_t kk = 0; kk < _secA[isect].size(); ++kk){
             if(kk){
@@ -236,7 +240,6 @@ namespace EDLib {
       }
     }
 
-/* FIXME Temporary. */
     void printfull() {
      std::vector<std::vector<precision>> rho = full();
 #ifdef USE_MPI
@@ -261,7 +264,6 @@ namespace EDLib {
         }
       }
     }
-/* END FIXME */
 
     /**
      * Combine the sectors of reduced density matrix.
@@ -418,12 +420,14 @@ namespace EDLib {
           _symA[0].set_sector(_secA[isect]);
           for(size_t jj = 0; jj < _secA[isect].size(); ++jj){
             _symA[0].next_state();
-            long long state0 = mergestate(_symA[0].state(), stateB);
+            int isign0;
+            long long state0 = mergestate(_symA[0].state(), stateB, isign0);
             _symA[1].set_sector(_secA[isect]);
             for(size_t kk = 0; kk < _secA[isect].size(); ++kk){
               _symA[1].next_state();
-              long long state1 = mergestate(_symA[1].state(), stateB);
-              _rho[isect][jj][kk] += weight *
+              int isign1;
+              long long state1 = mergestate(_symA[1].state(), stateB, isign1);
+              _rho[isect][jj][kk] += isign0 * isign1 * weight *
 #ifdef USE_MPI
                 evec[_ham.model().symmetry().index(state0)] *
                 evec[_ham.model().symmetry().index(state1)];
@@ -442,23 +446,32 @@ namespace EDLib {
      *
      * @param  stateA basis vector of subsystem A
      * @param  stateB basis vector of subsystem B
+     * @param  isign  resulting fermion sign
      * @return        basis vector of the whole system
      */
-    long long mergestate(long long stateA, long long stateB){
+    long long mergestate(long long stateA, long long stateB, int& isign){
       long long state = 0;
       long long newstate = 0;
-      int isign;
+      isign = 1;
+      /*
+       XXX The use of fermion sign here seems to be equivalent to moving
+       XXX the orbitals of A to the left before calculating wavefunction.
+      */
       for(size_t ispin = 0; ispin < _Nspins; ++ispin){
         for(size_t iorb = 0; iorb < _orbsA.size(); ++iorb){
           if(_ham.model().checkState(stateA, iorb + ispin * _Ns_A, _Nspins * _Ns_A)){
-            _ham.model().adag(_orbsA[iorb]  + ispin * _Ns, state, newstate, isign);
+            int isign_tmp;
+            _ham.model().adag(_orbsA[iorb]  + ispin * _Ns, state, newstate, isign_tmp);
             state = newstate;
+            isign *= isign_tmp;
           }
         }
         for(size_t iorb = 0; iorb < _orbsB.size(); ++iorb){
           if(_ham.model().checkState(stateB, iorb + ispin * _Ns_B, _Nspins * _Ns_B)){
-            _ham.model().adag(_orbsB[iorb]  + ispin * _Ns, state, newstate, isign);
+            int isign_tmp;
+            _ham.model().adag(_orbsB[iorb]  + ispin * _Ns, state, newstate, isign_tmp);
             state = newstate;
+            isign *= isign_tmp;
           }
         }
       }

@@ -13,12 +13,6 @@ t = np.array([[ 0.0, -1.0, -1.0,  0.3],
 Ns = len(U)
 sectors = np.array([[Ns/2,Ns/2],])
 
-dmorbs = np.array([[0, 1],
-                   [3, 1],
-                   [1, 2],
-                   [3, 0]])
-fulldmorbs = np.array([0, 1, 2, 3])
-
 
 data = h5py.File("input.h5", "w");
 
@@ -33,9 +27,3 @@ int_ds = int_g.create_dataset("values", shape=(Ns,), data=U)
 
 int_g = data.create_group("chemical_potential")
 int_ds = int_g.create_dataset("values", shape=(Ns,), data=xmu)
-
-for ii in range(dmorbs.shape[0]):
-  data.create_group("DensityMatrix" + str(ii) + "_orbitals").create_dataset("values", data=dmorbs[ii])
-
-fdmo_g = data.create_group("FullDensityMatrix_orbitals")
-fdmo_g.create_dataset("values", data=fulldmorbs)
