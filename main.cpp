@@ -43,7 +43,6 @@ int main(int argc, const char ** argv) {
     HamType ham(params);
 #endif
     ham.diag();
-/*
     EDLib::StaticObservables<HamType> so(params);
     so.print_static_observables(ham);
     for (const auto& pair :ham.eigenpairs()) {
@@ -64,6 +63,9 @@ int main(int argc, const char ** argv) {
     }
     for(size_t ii = 0; ii < dm.size(); ++ii){
       dm[ii].compute();
+#ifdef USE_MPI
+    if(!rank)
+#endif
       dm[ii].printfull();
       std::vector<double> spectrum = dm[ii].eigenvalues();
       for(size_t kk = 0; kk < spectrum.size(); ++kk){
@@ -86,6 +88,9 @@ int main(int argc, const char ** argv) {
     for(size_t ii = 0; ii < dmAB.size(); ++ii){
       for(size_t jj = 0; jj < dmAB[0].size(); ++jj){
         dmAB[ii][jj].compute();
+#ifdef USE_MPI
+    if(!rank)
+#endif
         dmAB[ii][jj].printfull();
         std::vector<double> spectrum = dmAB[ii][jj].eigenvalues();
         for(size_t kk = 0; kk < spectrum.size(); ++kk){
@@ -139,6 +144,7 @@ int main(int argc, const char ** argv) {
       }
     }
     EDLib::hdf5::save_eigen_pairs(ham, ar, "results");
+/*
     EDLib::gf::PairingSusceptibility < HamType, alps::gf::real_frequency_mesh> psusc(params, ham, std::vector<std::array<size_t, 2>> {{0, 1}});
     psusc.compute();
     psusc.save(ar, "results");
