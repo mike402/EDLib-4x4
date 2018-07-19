@@ -50,6 +50,7 @@ int main(int argc, const char ** argv) {
       so.print_major_electronic_configuration(ham, pair, 256, 1e-5);
       so.print_class_contrib(ham, pair, 256, 1e-5, true);
     }
+*/
     std::vector<EDLib::DensityMatrix<HamType>> dm;
     for(size_t ii = 0; ii < params["NSITES"]; ++ii){
       dm.push_back(EDLib::DensityMatrix<HamType>(params, ham, std::set<size_t> {ii}));
@@ -64,84 +65,77 @@ int main(int argc, const char ** argv) {
     }
     for(size_t ii = 0; ii < dm.size(); ++ii){
       dm[ii].compute();
-#ifdef USE_MPI
-    if(!rank)
-#endif
-      std::vector<double> spectrum = dm[ii].eigenvalues();
-      for(size_t kk = 0; kk < spectrum.size(); ++kk){
-        std::cout << spectrum[kk] << std::endl;
-      }
     }
 #ifdef USE_MPI
     if(!rank)
 #endif
     {
-      std::cout << "S_quad:" << std:: endl;
+      std::ofstream S_file("S.txt");
       for(size_t ii = 0; ii < dm.size(); ++ii){
-        std::cout << dm[ii].quadratic_entropy() << std::endl;
+        S_file << dm[ii].entanglement_entropy() << std::endl;
       }
-      std::cout << "S_ent:" << std::endl;
+      S_file.close();
+      std::ofstream S_quad_file("S_quad.txt");
       for(size_t ii = 0; ii < dm.size(); ++ii){
-        std::cout << dm[ii].entanglement_entropy() << std::endl;
+        S_quad_file << dm[ii].quadratic_entropy() << std::endl;
       }
+      S_quad_file.close();
     }
     for(size_t ii = 0; ii < dmAB.size(); ++ii){
       for(size_t jj = 0; jj < dmAB[0].size(); ++jj){
         dmAB[ii][jj].compute();
-#ifdef USE_MPI
-    if(!rank)
-#endif
-        std::vector<double> spectrum = dmAB[ii][jj].eigenvalues();
-        for(size_t kk = 0; kk < spectrum.size(); ++kk){
-          std::cout << spectrum[kk] << std::endl;
-        }
       }
     }
 #ifdef USE_MPI
     if(!rank)
 #endif
     {
-      std::cout << "S_quad_AB:" << std::endl;
+      std::ofstream S_AB_file("S_AB.txt");
       for(size_t ii = 0; ii < dmAB.size(); ++ii){
         for(size_t jj = 0; jj < dmAB[0].size(); ++jj){
           if(jj){
-            std::cout << "\t";
+            S_AB_file << "\t";
           }
-          std::cout << dmAB[ii][jj].quadratic_entropy();
+          S_AB_file << dmAB[ii][jj].entanglement_entropy();
         }
-        std::cout << std::endl;
+        S_AB_file << std::endl;
       }
-      std::cout << "I_quad_AB:" << std::endl;
+      S_AB_file.close();
+      std::ofstream I_AB_file("I_AB.txt");
       for(size_t ii = 0; ii < dmAB.size(); ++ii){
         for(size_t jj = 0; jj < dmAB[0].size(); ++jj){
           if(jj){
-            std::cout << "\t";
+            I_AB_file << "\t";
           }
-          std::cout << dm[ii].quadratic_entropy() + dm[jj].quadratic_entropy() - dmAB[ii][jj].quadratic_entropy();
+          I_AB_file << dm[ii].entanglement_entropy() + dm[jj].entanglement_entropy() - dmAB[ii][jj].entanglement_entropy();
         }
-        std::cout << std::endl;
+        I_AB_file << std::endl;
       }
-      std::cout << "S_ent_AB:" << std::endl;
+      I_AB_file.close();
+      std::ofstream S_quad_AB_file("S_quad_AB.txt");
       for(size_t ii = 0; ii < dmAB.size(); ++ii){
         for(size_t jj = 0; jj < dmAB[0].size(); ++jj){
           if(jj){
-            std::cout << "\t";
+            S_quad_AB_file << "\t";
           }
-          std::cout << dmAB[ii][jj].entanglement_entropy();
+          S_quad_AB_file << dmAB[ii][jj].quadratic_entropy();
         }
-        std::cout << std::endl;
+        S_quad_AB_file << std::endl;
       }
-      std::cout << "I_ent_AB:" << std::endl;
+      S_quad_AB_file.close();
+      std::ofstream I_quad_AB_file("I_quad_AB.txt");
       for(size_t ii = 0; ii < dmAB.size(); ++ii){
         for(size_t jj = 0; jj < dmAB[0].size(); ++jj){
           if(jj){
-            std::cout << "\t";
+            I_quad_AB_file << "\t";
           }
-          std::cout << dm[ii].entanglement_entropy() + dm[jj].entanglement_entropy() - dmAB[ii][jj].entanglement_entropy();
+          I_quad_AB_file << dm[ii].quadratic_entropy() + dm[jj].quadratic_entropy() - dmAB[ii][jj].quadratic_entropy();
         }
-        std::cout << std::endl;
+        I_quad_AB_file << std::endl;
       }
+      I_quad_AB_file.close();
     }
+/*
 */
     EDLib::hdf5::save_eigen_pairs(ham, ar, "results");
 /*
