@@ -43,6 +43,7 @@ int main(int argc, const char ** argv) {
     HamType ham(params);
 #endif
     ham.diag();
+/*
     EDLib::StaticObservables<HamType> so(params);
     so.print_static_observables(ham);
     for (const auto& pair :ham.eigenpairs()) {
@@ -143,6 +144,7 @@ int main(int argc, const char ** argv) {
         std::cout << std::endl;
       }
     }
+*/
     EDLib::hdf5::save_eigen_pairs(ham, ar, "results");
 /*
     EDLib::gf::PairingSusceptibility < HamType, alps::gf::real_frequency_mesh> psusc(params, ham, std::vector<std::array<size_t, 2>> {{0, 1}});
