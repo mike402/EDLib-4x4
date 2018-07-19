@@ -67,7 +67,6 @@ int main(int argc, const char ** argv) {
 #ifdef USE_MPI
     if(!rank)
 #endif
-      dm[ii].printfull();
       std::vector<double> spectrum = dm[ii].eigenvalues();
       for(size_t kk = 0; kk < spectrum.size(); ++kk){
         std::cout << spectrum[kk] << std::endl;
@@ -92,7 +91,6 @@ int main(int argc, const char ** argv) {
 #ifdef USE_MPI
     if(!rank)
 #endif
-        dmAB[ii][jj].printfull();
         std::vector<double> spectrum = dmAB[ii][jj].eigenvalues();
         for(size_t kk = 0; kk < spectrum.size(); ++kk){
           std::cout << spectrum[kk] << std::endl;
