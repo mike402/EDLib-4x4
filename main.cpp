@@ -43,14 +43,15 @@ int main(int argc, const char ** argv) {
     HamType ham(params);
 #endif
     ham.diag();
-/*
     EDLib::StaticObservables<HamType> so(params);
     so.print_static_observables(ham);
+/*
     for (const auto& pair :ham.eigenpairs()) {
       so.print_major_electronic_configuration(ham, pair, 256, 1e-5);
       so.print_class_contrib(ham, pair, 256, 1e-5, true);
     }
 */
+/*
     std::vector<EDLib::DensityMatrix<HamType>> dm;
     for(size_t ii = 0; ii < params["NSITES"]; ++ii){
       dm.push_back(EDLib::DensityMatrix<HamType>(params, ham, std::set<size_t> {ii}));
@@ -107,6 +108,7 @@ int main(int argc, const char ** argv) {
           if(jj){
             I_AB_file << "\t";
           }
+          // FIXME Divide by 2!
           I_AB_file << dm[ii].entanglement_entropy() + dm[jj].entanglement_entropy() - dmAB[ii][jj].entanglement_entropy();
         }
         I_AB_file << std::endl;
@@ -129,13 +131,13 @@ int main(int argc, const char ** argv) {
           if(jj){
             I_quad_AB_file << "\t";
           }
+          // FIXME Divide by 2!
           I_quad_AB_file << dm[ii].quadratic_entropy() + dm[jj].quadratic_entropy() - dmAB[ii][jj].quadratic_entropy();
         }
         I_quad_AB_file << std::endl;
       }
       I_quad_AB_file.close();
     }
-/*
 */
     EDLib::hdf5::save_eigen_pairs(ham, ar, "results");
 /*
