@@ -43,8 +43,10 @@ int main(int argc, const char ** argv) {
     HamType ham(params);
 #endif
     ham.diag();
+/*
     EDLib::StaticObservables<HamType> so(params);
     std::map<std::string, std::vector<double>> observables = so.calculate_static_observables(ham);
+*/
 /*
     so.print_static_observables(ham);
 */
@@ -150,6 +152,7 @@ int main(int argc, const char ** argv) {
     //EDLib::gf::GreensFunction < HamType, alps::gf::real_frequency_mesh> greensFunction(params, ham);
     greensFunction.compute();
     greensFunction.save(ar, "results");
+/*
 #ifdef USE_MPI
     if(!rank){
 #endif
@@ -174,10 +177,6 @@ int main(int argc, const char ** argv) {
 #ifdef USE_MPI
     }
 #endif
-/*
-*/
-/*
-*/
     EDLib::gf::ChiLoc<HamType, alps::gf::matsubara_positive_mesh, alps::gf::statistics::statistics_type> susc(params, ham, alps::gf::statistics::statistics_type::BOSONIC);
     //EDLib::gf::ChiLoc< HamType, alps::gf::real_frequency_mesh> susc(params, ham);
     // compute average magnetic moment
@@ -196,6 +195,7 @@ int main(int argc, const char ** argv) {
     // Compute sharge susceptibility
     susc.compute<EDLib::gf::NOperator<double>>(&avg);
     susc.save(ar, "results");
+*/
   } catch (std::exception & e) {
 #ifdef USE_MPI
     if(!rank) std::cerr<<e.what()<<std::endl;
