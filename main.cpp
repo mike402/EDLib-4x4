@@ -142,6 +142,23 @@ int main(int argc, const char ** argv) {
       I_quad_AB_file.close();
     }
 */
+/*
+    EDLib::DensityMatrix<HamType> dm1(params, ham);
+#ifdef USE_MPI
+    if(!rank){
+#endif
+     std::ofstream dm1_file("entanglement_spectrum.txt");
+     std::vector<double> dmevals = dm1.eigenvalues();
+     for(size_t ii = 0; ii < dmevals.size(); ++ii){
+      dm1_file << dm1.eigenvalues()[ii] << std::endl;
+     }
+     dm1_file.close();
+     std::cout << "S: " << dm1.entanglement_entropy() << std::endl;
+     std::cout << "S_quad: " << dm1.quadratic_entropy() << std::endl;
+#ifdef USE_MPI
+    }
+#endif
+*/
     EDLib::hdf5::save_eigen_pairs(ham, ar, "results");
 /*
     EDLib::gf::PairingSusceptibility < HamType, alps::gf::real_frequency_mesh> psusc(params, ham, std::vector<std::array<size_t, 2>> {{0, 1}});
@@ -152,7 +169,6 @@ int main(int argc, const char ** argv) {
     EDLib::gf::GreensFunction < HamType, alps::gf::real_frequency_mesh> greensFunction(params, ham);
     greensFunction.compute();
     greensFunction.save(ar, "results");
-/*
 #ifdef USE_MPI
     if(!rank){
 #endif
@@ -177,6 +193,7 @@ int main(int argc, const char ** argv) {
 #ifdef USE_MPI
     }
 #endif
+/*
     EDLib::gf::ChiLoc<HamType, alps::gf::matsubara_positive_mesh, alps::gf::statistics::statistics_type> susc(params, ham, alps::gf::statistics::statistics_type::BOSONIC);
     //EDLib::gf::ChiLoc< HamType, alps::gf::real_frequency_mesh> susc(params, ham);
     // compute average magnetic moment
