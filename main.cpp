@@ -188,8 +188,8 @@ int main(int argc, const char ** argv) {
     so.print_static_observables(ham, std::cout);
 /*
     for (const auto& pair :ham.eigenpairs()) {
-      so.print_major_electronic_configuration(ham, pair, 256, 1e-5);
-      so.print_class_contrib(ham, pair, 256, 1e-5, true);
+      so.print_major_electronic_configuration(ham, pair, 256, 1e-5, so_out);
+      so.print_class_contrib(ham, pair, 256, 1e-5, true, so_out);
     }
 */
 /*
