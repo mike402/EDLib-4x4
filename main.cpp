@@ -44,13 +44,14 @@ int main(int argc, const char ** argv) {
 #endif
     ham.diag();
     std::vector<EDLib::DensityMatrix<HamType>> dm;
-    for(size_t ii = 0; ii < params["NSITES"]; ++ii){
+    size_t Nsites = size_t(params["NSITES"]);
+    for(size_t ii = 0; ii < Nsites; ++ii){
       dm.push_back(EDLib::DensityMatrix<HamType>(params, ham, std::set<size_t> {ii}));
     }
     std::vector<std::vector<EDLib::DensityMatrix<HamType>>> dmAB;
-    for(size_t ii = 0; ii < params["NSITES"]; ++ii){
+    for(size_t ii = 0; ii < Nsites; ++ii){
       std::vector<EDLib::DensityMatrix<HamType>> tmp;
-      for(size_t jj = 0; jj < params["NSITES"]; ++jj){
+      for(size_t jj = 0; jj < Nsites; ++jj){
         tmp.push_back(EDLib::DensityMatrix<HamType>(params, ham, std::set<size_t> {ii, jj}));
       }
       dmAB.push_back(tmp);
@@ -184,7 +185,7 @@ int main(int argc, const char ** argv) {
 */
     EDLib::StaticObservables<HamType> so(params);
     std::map<std::string, std::vector<double>> observables = so.calculate_static_observables(ham);
-    so.print_static_observables(ham);
+    so.print_static_observables(ham, std::cout);
 /*
     for (const auto& pair :ham.eigenpairs()) {
       so.print_major_electronic_configuration(ham, pair, 256, 1e-5);

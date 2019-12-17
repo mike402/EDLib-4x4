@@ -136,13 +136,14 @@ TEST(HubbardModelTest2, ReferenceTest) {
   }
 
   std::vector<EDLib::DensityMatrix<HamType>> dm;
-  for(size_t ii = 0; ii < params["NSITES"]; ++ii){
+  size_t Nsites = size_t(params["NSITES"]);
+  for(size_t ii = 0; ii < Nsites; ++ii){
     dm.push_back(EDLib::DensityMatrix<HamType>(params, ham, std::set<size_t> {ii}));
   }
   std::vector<std::vector<EDLib::DensityMatrix<HamType>>> dmAB;
-  for(size_t ii = 0; ii < params["NSITES"]; ++ii){
+  for(size_t ii = 0; ii < Nsites; ++ii){
     std::vector<EDLib::DensityMatrix<HamType>> tmp;
-    for(size_t jj = 0; jj < params["NSITES"]; ++jj){
+    for(size_t jj = 0; jj < Nsites; ++jj){
       tmp.push_back(EDLib::DensityMatrix<HamType>(params, ham, std::set<size_t> {ii, jj}));
     }
     dmAB.push_back(tmp);
