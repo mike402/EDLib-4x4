@@ -43,20 +43,6 @@ int main(int argc, const char ** argv) {
     HamType ham(params);
 #endif
     ham.diag();
-/*
-    EDLib::StaticObservables<HamType> so(params);
-    std::map<std::string, std::vector<double>> observables = so.calculate_static_observables(ham);
-*/
-/*
-    so.print_static_observables(ham);
-*/
-/*
-    for (const auto& pair :ham.eigenpairs()) {
-      so.print_major_electronic_configuration(ham, pair, 256, 1e-5);
-      so.print_class_contrib(ham, pair, 256, 1e-5, true);
-    }
-*/
-/*
     std::vector<EDLib::DensityMatrix<HamType>> dm;
     for(size_t ii = 0; ii < params["NSITES"]; ++ii){
       dm.push_back(EDLib::DensityMatrix<HamType>(params, ham, std::set<size_t> {ii}));
@@ -81,11 +67,13 @@ int main(int argc, const char ** argv) {
         S_file << dm[ii].entanglement_entropy() << std::endl;
       }
       S_file.close();
+/*
       std::ofstream S_quad_file("S_quad.txt");
       for(size_t ii = 0; ii < dm.size(); ++ii){
         S_quad_file << dm[ii].quadratic_entropy() << std::endl;
       }
       S_quad_file.close();
+*/
     }
     for(size_t ii = 0; ii < dmAB.size(); ++ii){
       for(size_t jj = 0; jj < dmAB[0].size(); ++jj){
@@ -118,6 +106,7 @@ int main(int argc, const char ** argv) {
         I_AB_file << std::endl;
       }
       I_AB_file.close();
+/*
       std::ofstream S_quad_AB_file("S_quad_AB.txt");
       for(size_t ii = 0; ii < dmAB.size(); ++ii){
         for(size_t jj = 0; jj < dmAB[0].size(); ++jj){
@@ -140,8 +129,8 @@ int main(int argc, const char ** argv) {
         I_quad_AB_file << std::endl;
       }
       I_quad_AB_file.close();
-    }
 */
+    }
 /*
     EDLib::DensityMatrix<HamType> dm1(params, ham);
 #ifdef USE_MPI
@@ -158,13 +147,12 @@ int main(int argc, const char ** argv) {
 #ifdef USE_MPI
     }
 #endif
-*/
     EDLib::hdf5::save_eigen_pairs(ham, ar, "results");
+*/
 /*
     EDLib::gf::PairingSusceptibility < HamType, alps::gf::real_frequency_mesh> psusc(params, ham, std::vector<std::array<size_t, 2>> {{0, 1}});
     psusc.compute();
     psusc.save(ar, "results");
-*/
     //EDLib::gf::GreensFunction < HamType, alps::gf::matsubara_positive_mesh, alps::gf::statistics::statistics_type> greensFunction(params, ham,alps::gf::statistics::statistics_type::FERMIONIC);
     EDLib::gf::GreensFunction < HamType, alps::gf::real_frequency_mesh> greensFunction(params, ham);
     greensFunction.compute();
@@ -193,9 +181,19 @@ int main(int argc, const char ** argv) {
 #ifdef USE_MPI
     }
 #endif
+*/
+    EDLib::StaticObservables<HamType> so(params);
+    std::map<std::string, std::vector<double>> observables = so.calculate_static_observables(ham);
+    so.print_static_observables(ham);
 /*
-    EDLib::gf::ChiLoc<HamType, alps::gf::matsubara_positive_mesh, alps::gf::statistics::statistics_type> susc(params, ham, alps::gf::statistics::statistics_type::BOSONIC);
-    //EDLib::gf::ChiLoc< HamType, alps::gf::real_frequency_mesh> susc(params, ham);
+    for (const auto& pair :ham.eigenpairs()) {
+      so.print_major_electronic_configuration(ham, pair, 256, 1e-5);
+      so.print_class_contrib(ham, pair, 256, 1e-5, true);
+    }
+*/
+/*
+    //EDLib::gf::ChiLoc<HamType, alps::gf::matsubara_positive_mesh, alps::gf::statistics::statistics_type> susc(params, ham, alps::gf::statistics::statistics_type::BOSONIC);
+    EDLib::gf::ChiLoc< HamType, alps::gf::real_frequency_mesh> susc(params, ham);
     // compute average magnetic moment
     double avg = 0.0;
     for(auto x : observables[so._M_]) {
